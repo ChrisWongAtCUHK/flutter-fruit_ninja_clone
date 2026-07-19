@@ -16,7 +16,7 @@ class CanvasArea extends StatefulWidget {
   }
 }
 
-class _CanvasAreaState<CanvasArea> extends State {
+class _CanvasAreaState extends State<CanvasArea> {
   int _score = 0;
   TouchSlice? _touchSlice;
   final List<Fruit> _fruits = <Fruit>[];
@@ -251,7 +251,7 @@ class _CanvasAreaState<CanvasArea> extends State {
     _touchSlice = null;
   }
 
-  void _setNewSlice(details) {
+  void _setNewSlice(dynamic details) {
     _touchSlice = TouchSlice(pointsList: <Offset>[details.localFocalPoint]);
   }
 

@@ -7,10 +7,10 @@ class InitialScreen extends StatefulWidget {
   const InitialScreen({super.key});
 
   @override
-  _InitialScreenState createState() => _InitialScreenState();
+  InitialScreenState createState() => InitialScreenState();
 }
 
-class _InitialScreenState extends State<InitialScreen> {
+class InitialScreenState extends State<InitialScreen> {
   @override
   void initState() {
     SystemChrome.setEnabledSystemUIMode(
@@ -18,9 +18,9 @@ class _InitialScreenState extends State<InitialScreen> {
       overlays: [SystemUiOverlay.bottom],
     );
 
-    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
-      statusBarColor: Colors.transparent,
-    ));
+    SystemChrome.setSystemUIOverlayStyle(
+      SystemUiOverlayStyle(statusBarColor: Colors.transparent),
+    );
     super.initState();
   }
 
@@ -28,10 +28,7 @@ class _InitialScreenState extends State<InitialScreen> {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: Scaffold(
-        backgroundColor: Colors.black54,
-        body: CanvasArea(),
-      ),
+      home: Scaffold(backgroundColor: Colors.black54, body: CanvasArea()),
     );
   }
 }
