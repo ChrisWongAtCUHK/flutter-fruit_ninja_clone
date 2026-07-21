@@ -18,6 +18,7 @@ class CanvasArea extends StatefulWidget {
 
 class _CanvasAreaState extends State<CanvasArea> {
   int _score = 0;
+  bool _isPaused = false;
   TouchSlice? _touchSlice;
   final List<Fruit> _fruits = <Fruit>[];
   final List<FruitPart> _fruitParts = <FruitPart>[];
@@ -45,20 +46,35 @@ class _CanvasAreaState extends State<CanvasArea> {
   }
 
   void _tick() {
-    setState(() {
-      for (Fruit fruit in _fruits) {
-        fruit.applyGravity();
-      }
-      for (FruitPart fruitPart in _fruitParts) {
-        fruitPart.applyGravity();
-      }
+    if (!mounted) {
+      return;
+    }
 
-      if (Random().nextDouble() > 0.97) {
-        _spawnRandomFruit();
-      }
-    });
+    if (!_isPaused) {
+      setState(() {
+        for (Fruit fruit in _fruits) {
+          fruit.applyGravity();
+        }
+        for (FruitPart fruitPart in _fruitParts) {
+          fruitPart.applyGravity();
+        }
+
+        if (Random().nextDouble() > 0.97) {
+          _spawnRandomFruit();
+        }
+      });
+    }
 
     Future<void>.delayed(Duration(milliseconds: 30), _tick);
+  }
+
+  void _togglePause() {
+    setState(() {
+      _isPaused = !_isPaused;
+      if (_isPaused) {
+        _touchSlice = null;
+      }
+    });
   }
 
   @override
@@ -81,6 +97,10 @@ class _CanvasAreaState extends State<CanvasArea> {
         child: Text('Score: $_score', style: TextStyle(fontSize: 24)),
       ),
     );
+    if (_isPaused) {
+      widgetsOnStack.add(_getPauseOverlay());
+    }
+    widgetsOnStack.add(_getPauseButton());
 
     return widgetsOnStack;
   }
@@ -163,20 +183,66 @@ class _CanvasAreaState extends State<CanvasArea> {
     );
   }
 
+  Widget _getPauseButton() {
+    return Positioned(
+      left: 8,
+      top: 8,
+      child: IconButton(
+        icon: Icon(
+          _isPaused ? Icons.play_arrow_rounded : Icons.pause_rounded,
+          color: Colors.white,
+          size: 32,
+        ),
+        onPressed: _togglePause,
+      ),
+    );
+  }
+
+  Widget _getPauseOverlay() {
+    return Positioned.fill(
+      child: ColoredBox(
+        color: Colors.black54,
+        child: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              Text(
+                'Paused',
+                style: TextStyle(
+                  fontSize: 48,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+              SizedBox(height: 24),
+              ElevatedButton(
+                onPressed: _togglePause,
+                child: Text('Resume'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _getGestureDetector() {
-    return GestureDetector(
-      onScaleStart: (ScaleStartDetails details) {
-        setState(() => _setNewSlice(details));
-      },
-      onScaleUpdate: (ScaleUpdateDetails details) {
-        setState(() {
-          _addPointToSlice(details);
-          _checkCollision();
-        });
-      },
-      onScaleEnd: (ScaleEndDetails details) {
-        setState(() => _resetSlice());
-      },
+    return IgnorePointer(
+      ignoring: _isPaused,
+      child: GestureDetector(
+        onScaleStart: (ScaleStartDetails details) {
+          setState(() => _setNewSlice(details));
+        },
+        onScaleUpdate: (ScaleUpdateDetails details) {
+          setState(() {
+            _addPointToSlice(details);
+            _checkCollision();
+          });
+        },
+        onScaleEnd: (ScaleEndDetails details) {
+          setState(() => _resetSlice());
+        },
+      ),
     );
   }
 
