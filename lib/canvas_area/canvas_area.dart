@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 
 import 'models/fruit.dart';
@@ -22,12 +23,27 @@ class _CanvasAreaState extends State<CanvasArea> {
   TouchSlice? _touchSlice;
   final List<Fruit> _fruits = <Fruit>[];
   final List<FruitPart> _fruitParts = <FruitPart>[];
+  final AudioPlayer _audioPlayer = AudioPlayer();
 
   @override
   void initState() {
     _spawnRandomFruit();
     _tick();
     super.initState();
+  }
+
+  Future<void> _playSliceSound() async {
+    try {
+      await _audioPlayer.play(AssetSource('slice.wav'));
+    } catch (e) {
+      debugPrint('Error playing slice sound: $e');
+    }
+  }
+
+  @override
+  void dispose() {
+    _audioPlayer.dispose();
+    super.dispose();
   }
 
   void _spawnRandomFruit() {
@@ -277,6 +293,8 @@ class _CanvasAreaState extends State<CanvasArea> {
   }
 
   void _turnFruitIntoParts(Fruit hit) {
+    _playSliceSound();
+
     FruitPart leftFruitPart = FruitPart(
       position: Offset(hit.position.dx - hit.width / 8, hit.position.dy),
       width: hit.width / 2,
