@@ -23,7 +23,6 @@ class _CanvasAreaState extends State<CanvasArea> {
   TouchSlice? _touchSlice;
   final List<Fruit> _fruits = <Fruit>[];
   final List<FruitPart> _fruitParts = <FruitPart>[];
-  final AudioPlayer _audioPlayer = AudioPlayer();
 
   @override
   void initState() {
@@ -34,16 +33,21 @@ class _CanvasAreaState extends State<CanvasArea> {
 
   Future<void> _playSliceSound() async {
     try {
-      await _audioPlayer.play(AssetSource('slice.mp3'));
+      // Create a new lightweight player instance for each slice event
+      final player = AudioPlayer();
+
+      // Low latency mode is optimized for fast UI sound effects
+      await player.setPlayerMode(PlayerMode.lowLatency);
+
+      await player.play(AssetSource('slice.mp3'));
+
+      // Dispose player automatically once the sound finishes playing
+      player.onPlayerComplete.listen((_) {
+        player.dispose();
+      });
     } catch (e) {
       debugPrint('Error playing slice sound: $e');
     }
-  }
-
-  @override
-  void dispose() {
-    _audioPlayer.dispose();
-    super.dispose();
   }
 
   void _spawnRandomFruit() {
