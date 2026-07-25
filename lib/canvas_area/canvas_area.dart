@@ -34,7 +34,7 @@ class _CanvasAreaState extends State<CanvasArea> {
 
   Future<void> _playSliceSound() async {
     try {
-      await _audioPlayer.play(AssetSource('slice.wav'));
+      await _audioPlayer.play(AssetSource('slice.mp3'));
     } catch (e) {
       debugPrint('Error playing slice sound: $e');
     }
@@ -231,10 +231,7 @@ class _CanvasAreaState extends State<CanvasArea> {
                 ),
               ),
               SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: _togglePause,
-                child: Text('Resume'),
-              ),
+              ElevatedButton(onPressed: _togglePause, child: Text('Resume')),
             ],
           ),
         ),
