@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import 'canvas_area/canvas_area.dart';
+import 'menu_screen.dart';
 
 class InitialScreen extends StatefulWidget {
   const InitialScreen({super.key});
@@ -28,7 +28,7 @@ class InitialScreenState extends State<InitialScreen> {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: Scaffold(backgroundColor: Colors.black54, body: CanvasArea()),
+      home: Scaffold(body: MenuScreen()),
     );
   }
 }
