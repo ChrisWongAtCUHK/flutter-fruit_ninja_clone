@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
+import 'package:vibration/vibration.dart';
 
 import 'models/fruit.dart';
 import 'models/fruit_part.dart';
@@ -47,6 +48,21 @@ class _CanvasAreaState extends State<CanvasArea> {
       });
     } catch (e) {
       debugPrint('Error playing slice sound: $e');
+    }
+  }
+
+  Future<void> _vibrateOnSlice() async {
+    try {
+      // Check if the device has vibration hardware before attempting to vibrate
+      if (await Vibration.hasVibrator()) {
+        Vibration.vibrate(
+          duration: 150,
+        ); // Short 150ms pulse for slice feedback
+      } else {
+        debugPrint('No vibration.');
+      }
+    } catch (e) {
+      debugPrint('Error triggering vibration: $e');
     }
   }
 
@@ -295,6 +311,7 @@ class _CanvasAreaState extends State<CanvasArea> {
 
   void _turnFruitIntoParts(Fruit hit) {
     _playSliceSound();
+    _vibrateOnSlice();
 
     FruitPart leftFruitPart = FruitPart(
       position: Offset(hit.position.dx - hit.width / 8, hit.position.dy),
