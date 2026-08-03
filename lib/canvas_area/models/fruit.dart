@@ -1,9 +1,32 @@
 import 'dart:ui';
-
 import 'gravitational_object.dart';
+
+enum FruitType {
+  melon,
+  banana;
+
+  String get uncutImagePath {
+    switch (this) {
+      case FruitType.melon:
+        return 'assets/melon_uncut.png';
+      case FruitType.banana:
+        return 'assets/banana_uncut.png';
+    }
+  }
+
+  (String, String) get cutImagePaths {
+    switch (this) {
+      case FruitType.melon:
+        return ('assets/melon_cut.png', 'assets/melon_cut_right.png');
+      case FruitType.banana:
+        return ('assets/banana_cut_left.png', 'assets/banana_cut_right.png');
+    }
+  }
+}
 
 class Fruit extends GravitationalObject {
   Fruit({
+    required this.type,
     required this.width,
     required this.height,
     required super.position,
@@ -12,26 +35,16 @@ class Fruit extends GravitationalObject {
     super.rotation = 0.25,
   });
 
+  final FruitType type;
   final double width;
   final double height;
 
+  String get imagePath => type.uncutImagePath;
+  (String, String) get cutImagePaths => type.cutImagePaths;
+
   bool isPointInside(Offset point) {
-    if (point.dx < position.dx) {
-      return false;
-    }
-
-    if (point.dx > position.dx + width) {
-      return false;
-    }
-
-    if (point.dy < position.dy) {
-      return false;
-    }
-
-    if (point.dy > position.dy + height) {
-      return false;
-    }
-
+    if (point.dx < position.dx || point.dx > position.dx + width) return false;
+    if (point.dy < position.dy || point.dy > position.dy + height) return false;
     return true;
   }
 }

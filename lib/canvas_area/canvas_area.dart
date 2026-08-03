@@ -67,8 +67,13 @@ class _CanvasAreaState extends State<CanvasArea> {
   }
 
   void _spawnRandomFruit() {
+    // Randomly pick between melon and banana
+    final randomType =
+        FruitType.values[Random().nextInt(FruitType.values.length)];
+
     _fruits.add(
       Fruit(
+        type: randomType,
         position: Offset(0, 200),
         width: 80,
         height: 80,
@@ -173,7 +178,7 @@ class _CanvasAreaState extends State<CanvasArea> {
           left: fruit.position.dx,
           child: Transform.rotate(
             angle: fruit.rotation * pi * 2,
-            child: _getMelon(fruit),
+            child: _getFruitImage(fruit),
           ),
         ),
       );
@@ -190,7 +195,7 @@ class _CanvasAreaState extends State<CanvasArea> {
         Positioned(
           top: fruitPart.position.dy,
           left: fruitPart.position.dx,
-          child: _getMelonCut(fruitPart),
+          child: _getFruitPartImage(fruitPart),
         ),
       );
     }
@@ -198,22 +203,20 @@ class _CanvasAreaState extends State<CanvasArea> {
     return list;
   }
 
-  Widget _getMelonCut(FruitPart fruitPart) {
+  Widget _getFruitPartImage(FruitPart fruitPart) {
     return Transform.rotate(
       angle: fruitPart.rotation * pi * 2,
       child: Image.asset(
-        fruitPart.isLeft
-            ? 'assets/melon_cut.png'
-            : 'assets/melon_cut_right.png',
+        fruitPart.imagePath, // Dynamic image path based on FruitType and side
         height: 80,
         fit: BoxFit.fitHeight,
       ),
     );
   }
 
-  Widget _getMelon(Fruit fruit) {
+  Widget _getFruitImage(Fruit fruit) {
     return Image.asset(
-      'assets/melon_uncut.png',
+      fruit.imagePath, // Dynamic image path based on FruitType
       height: 80,
       fit: BoxFit.fitHeight,
     );
@@ -314,6 +317,7 @@ class _CanvasAreaState extends State<CanvasArea> {
     _vibrateOnSlice();
 
     FruitPart leftFruitPart = FruitPart(
+      type: hit.type,
       position: Offset(hit.position.dx - hit.width / 8, hit.position.dy),
       width: hit.width / 2,
       height: hit.height,
@@ -327,6 +331,7 @@ class _CanvasAreaState extends State<CanvasArea> {
     );
 
     FruitPart rightFruitPart = FruitPart(
+      type: hit.type,
       position: Offset(
         hit.position.dx + hit.width / 4 + hit.width / 8,
         hit.position.dy,
