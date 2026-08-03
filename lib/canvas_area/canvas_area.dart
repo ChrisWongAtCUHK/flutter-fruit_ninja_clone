@@ -20,10 +20,15 @@ class CanvasArea extends StatefulWidget {
 
 class _CanvasAreaState extends State<CanvasArea> {
   int _score = 0;
+  int _lives = 3;
   bool _isPaused = false;
+  bool _isGameOver = false;
   TouchSlice? _touchSlice;
   final List<Fruit> _fruits = <Fruit>[];
   final List<FruitPart> _fruitParts = <FruitPart>[];
+
+  // Track screen size safely
+  Size _screenSize = Size.zero;
 
   @override
   void initState() {
@@ -66,6 +71,29 @@ class _CanvasAreaState extends State<CanvasArea> {
     }
   }
 
+  Future<void> _playGameOverSound() async {
+    try {
+      final player = AudioPlayer();
+      await player.setPlayerMode(PlayerMode.lowLatency);
+      await player.play(AssetSource('game_over.mp3'));
+      player.onPlayerComplete.listen((_) {
+        player.dispose();
+      });
+    } catch (e) {
+      debugPrint('Error playing game over sound: $e');
+    }
+  }
+
+  Future<void> _vibrateOnGameOver() async {
+    try {
+      if (await Vibration.hasVibrator()) {
+        Vibration.vibrate(duration: 500);
+      }
+    } catch (e) {
+      debugPrint('Error triggering game over vibration: $e');
+    }
+  }
+
   void _spawnRandomFruit() {
     // Randomly pick between melon and banana
     final randomType =
@@ -91,10 +119,11 @@ class _CanvasAreaState extends State<CanvasArea> {
       return;
     }
 
-    if (!_isPaused) {
+    if (!_isPaused && !_isGameOver) {
       setState(() {
-        for (Fruit fruit in _fruits) {
+        for (Fruit fruit in List<Fruit>.from(_fruits)) {
           fruit.applyGravity();
+          _checkMissedFruit(fruit);
         }
         for (FruitPart fruitPart in _fruitParts) {
           fruitPart.applyGravity();
@@ -109,6 +138,33 @@ class _CanvasAreaState extends State<CanvasArea> {
     Future<void>.delayed(Duration(milliseconds: 30), _tick);
   }
 
+  void _checkMissedFruit(Fruit fruit) {
+    // Check against cached screen height safely
+    if (_screenSize.height > 0 && fruit.position.dy > _screenSize.height) {
+      _fruits.remove(fruit);
+      setState(() {
+        _lives--;
+        if (_lives <= 0) {
+          _isGameOver = true;
+          _playGameOverSound();
+          _vibrateOnGameOver();
+        }
+      });
+    }
+  }
+
+  void _restartGame() {
+    setState(() {
+      _score = 0;
+      _lives = 3;
+      _isGameOver = false;
+      _fruits.clear();
+      _fruitParts.clear();
+      _isPaused = false;
+    });
+    _spawnRandomFruit();
+  }
+
   void _togglePause() {
     setState(() {
       _isPaused = !_isPaused;
@@ -120,6 +176,9 @@ class _CanvasAreaState extends State<CanvasArea> {
 
   @override
   Widget build(BuildContext context) {
+    // Store screen size safely within build phase
+    _screenSize = MediaQuery.sizeOf(context);
+
     return Stack(children: _getStack());
   }
 
@@ -138,12 +197,33 @@ class _CanvasAreaState extends State<CanvasArea> {
         child: Text('Score: $_score', style: TextStyle(fontSize: 24)),
       ),
     );
+    widgetsOnStack.add(_getLivesDisplay());
     if (_isPaused) {
       widgetsOnStack.add(_getPauseOverlay());
+    }
+    if (_isGameOver) {
+      widgetsOnStack.add(_getGameOverOverlay());
     }
     widgetsOnStack.add(_getPauseButton());
 
     return widgetsOnStack;
+  }
+
+  Widget _getLivesDisplay() {
+    return Positioned(
+      left: 16,
+      top: 16,
+      child: Row(
+        children: List.generate(
+          3,
+          (index) => Icon(
+            index < _lives ? Icons.favorite : Icons.heart_broken,
+            color: Colors.red,
+            size: 28,
+          ),
+        ),
+      ),
+    );
   }
 
   Container _getBackground() {
@@ -262,9 +342,42 @@ class _CanvasAreaState extends State<CanvasArea> {
     );
   }
 
+  Widget _getGameOverOverlay() {
+    return Positioned.fill(
+      child: ColoredBox(
+        color: Colors.black87,
+        child: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              Text(
+                'Game Over',
+                style: TextStyle(
+                  fontSize: 48,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.red,
+                ),
+              ),
+              SizedBox(height: 16),
+              Text(
+                'Score: $_score',
+                style: TextStyle(fontSize: 32, color: Colors.white),
+              ),
+              SizedBox(height: 32),
+              ElevatedButton(
+                onPressed: _restartGame,
+                child: Text('Play Again'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _getGestureDetector() {
     return IgnorePointer(
-      ignoring: _isPaused,
+      ignoring: _isPaused || _isGameOver,
       child: GestureDetector(
         onScaleStart: (ScaleStartDetails details) {
           setState(() => _setNewSlice(details));
