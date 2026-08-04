@@ -211,8 +211,8 @@ class _CanvasAreaState extends State<CanvasArea> {
 
   Widget _getLivesDisplay() {
     return Positioned(
-      left: 16,
-      top: 16,
+      bottom: 16,
+      right: 16,
       child: Row(
         children: List.generate(
           3,
