@@ -3,7 +3,8 @@ import 'gravitational_object.dart';
 
 enum FruitType {
   melon,
-  banana;
+  banana,
+  durian;
 
   String get uncutImagePath {
     switch (this) {
@@ -11,6 +12,8 @@ enum FruitType {
         return 'assets/melon_uncut.png';
       case FruitType.banana:
         return 'assets/banana_uncut.png';
+      case FruitType.durian:
+        return 'assets/durian_uncut.png';
     }
   }
 
@@ -20,6 +23,8 @@ enum FruitType {
         return ('assets/melon_cut.png', 'assets/melon_cut_right.png');
       case FruitType.banana:
         return ('assets/banana_cut_left.png', 'assets/banana_cut_right.png');
+      case FruitType.durian:
+        return ('assets/durian_cut_left.png', 'assets/durian_cut_right.png');
     }
   }
 }

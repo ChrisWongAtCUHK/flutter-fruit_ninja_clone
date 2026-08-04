@@ -95,7 +95,7 @@ class _CanvasAreaState extends State<CanvasArea> {
   }
 
   void _spawnRandomFruit() {
-    // Randomly pick between melon and banana
+    // Randomly pick between melon, banana and durian
     final randomType =
         FruitType.values[Random().nextInt(FruitType.values.length)];
 
