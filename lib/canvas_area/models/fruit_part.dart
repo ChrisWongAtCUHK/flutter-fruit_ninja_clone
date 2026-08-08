@@ -20,7 +20,7 @@ class FruitPart extends GravitationalObject {
   final bool isLeft;
 
   String get imagePath {
-    final paths = type.cutImagePaths;
+    final paths = type.cutImagePaths!;
     return isLeft ? paths.$1 : paths.$2;
   }
 }

@@ -4,7 +4,10 @@ import 'gravitational_object.dart';
 enum FruitType {
   melon,
   banana,
-  durian;
+  durian,
+  bomb;
+
+  bool get isBomb => this == FruitType.bomb;
 
   String get uncutImagePath {
     switch (this) {
@@ -14,10 +17,13 @@ enum FruitType {
         return 'assets/banana_uncut.png';
       case FruitType.durian:
         return 'assets/durian_uncut.png';
+      case FruitType.bomb:
+        return 'assets/bomb_uncut.png';
     }
   }
 
-  (String, String) get cutImagePaths {
+  (String, String)? get cutImagePaths {
+    if (isBomb) return null;
     switch (this) {
       case FruitType.melon:
         return ('assets/melon_cut.png', 'assets/melon_cut_right.png');
@@ -25,6 +31,8 @@ enum FruitType {
         return ('assets/banana_cut_left.png', 'assets/banana_cut_right.png');
       case FruitType.durian:
         return ('assets/durian_cut_left.png', 'assets/durian_cut_right.png');
+      case FruitType.bomb:
+        return null;
     }
   }
 }
@@ -45,7 +53,7 @@ class Fruit extends GravitationalObject {
   final double height;
 
   String get imagePath => type.uncutImagePath;
-  (String, String) get cutImagePaths => type.cutImagePaths;
+  (String, String)? get cutImagePaths => type.cutImagePaths;
 
   bool isPointInside(Offset point) {
     if (point.dx < position.dx || point.dx > position.dx + width) return false;

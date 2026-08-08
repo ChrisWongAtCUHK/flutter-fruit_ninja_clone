@@ -142,14 +142,18 @@ class _CanvasAreaState extends State<CanvasArea> {
     // Check against cached screen height safely
     if (_screenSize.height > 0 && fruit.position.dy > _screenSize.height) {
       _fruits.remove(fruit);
-      setState(() {
-        _lives--;
-        if (_lives <= 0) {
-          _isGameOver = true;
-          _playGameOverSound();
-          _vibrateOnGameOver();
-        }
-      });
+
+      // ONLY decrease a life if the missed object is NOT a bomb
+      if (!fruit.type.isBomb) {
+        setState(() {
+          _lives--;
+          if (_lives <= 0) {
+            _isGameOver = true;
+            _playGameOverSound();
+            _vibrateOnGameOver();
+          }
+        });
+      }
     }
   }
 
@@ -417,11 +421,52 @@ class _CanvasAreaState extends State<CanvasArea> {
 
         if (secondPointInside && !fruit.isPointInside(point)) {
           _fruits.remove(fruit);
-          _turnFruitIntoParts(fruit);
-          _score += 10;
+          if (fruit.type.isBomb) {
+            _handleBombSlice();
+          } else {
+            _turnFruitIntoParts(fruit);
+            _score += 10;
+          }
           break;
         }
       }
+    }
+  }
+
+  void _handleBombSlice() {
+    _playBombSound();
+    _vibrateOnBomb();
+
+    setState(() {
+      _lives--;
+      if (_lives <= 0) {
+        _isGameOver = true;
+        _playGameOverSound();
+        _vibrateOnGameOver();
+      }
+    });
+  }
+
+  Future<void> _playBombSound() async {
+    try {
+      final player = AudioPlayer();
+      await player.setPlayerMode(PlayerMode.lowLatency);
+      await player.play(AssetSource('bomb.mp3'));
+      player.onPlayerComplete.listen((_) {
+        player.dispose();
+      });
+    } catch (e) {
+      debugPrint('Error playing bomb sound: $e');
+    }
+  }
+
+  Future<void> _vibrateOnBomb() async {
+    try {
+      if (await Vibration.hasVibrator()) {
+        Vibration.vibrate(duration: 200);
+      }
+    } catch (e) {
+      debugPrint('Error triggering bomb vibration: $e');
     }
   }
 
